@@ -14,7 +14,7 @@ class Parameter:
 		self.values = [self.value]
 
 	def insertValue(self, line):
-		replaceString = "@"+self.name.toUpper()
+		replaceString = "@"+self.name.upper()
 		line = line.replace(replaceString, str(self.value))
 		return line
 
@@ -91,11 +91,11 @@ class MCMC:
 			try:
 				with open(templateFileName, 'r') as templateFile:
 					with open(inputFileName, 'w') as inputFile:
-						contents = templateFile.readAll()
+						contents = templateFile.readlines()
 						for line in contents:
-							for parameter in self.parameters:
-								line = parameter.insertValue(line)
-								inputFile.write(line+"\n")
+							for parameterKey in self.parameters:
+								line = self.parameters[parameterKey].insertValue(line)
+							inputFile.write(line+"\n")
 			except EnvironmentError: # parent of IOError, OSError *and* WindowsError where available
 				exit("Error opening file...")
 			return
