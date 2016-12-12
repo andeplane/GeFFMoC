@@ -1,4 +1,4 @@
-# In this example, we have a 
+# In this example, we have a sum of two weighted normal distributions with different parameters. We have a total of 6 parameters.
 import numpy as np
 import scipy.stats
 from matplotlib.pyplot import *
@@ -34,7 +34,7 @@ def chiSquaredCalculator(parameters):
 # Create MCMC object
 mcmc = MCMC(parameters=parameters, chiSquaredCalculator = chiSquaredCalculator, temperature=1e-3, verbose = False)
 # Do MCMC steps
-mcmc.stepMetropolisHastings(numberOfSteps = 2e5)
+mcmc.stepMetropolisHastings(numberOfSteps = 1e6)
 # Save to file if we want to
 mcmc.saveParameters()
 

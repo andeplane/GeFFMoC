@@ -1,3 +1,4 @@
+# This example shows how we can use GeFFMoC to find the two parameters in a normal distribution based on data points.
 import numpy as np
 import scipy.stats
 from matplotlib.pyplot import *
