@@ -14,7 +14,7 @@ class Parameter:
 		self.values = [self.value]
 
 	def insertValue(self, line):
-		replaceString = "__"+self.name.toUpper()+"__"
+		replaceString = "@"+self.name.toUpper()
 		line = line.replace(replaceString, str(self.value))
 		return line
 
