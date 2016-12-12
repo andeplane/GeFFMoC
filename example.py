@@ -24,18 +24,25 @@ def chiSquaredCalculator(parameters):
 # Create MCMC object
 mcmc = MCMC(parameters=parameters, chiSquaredCalculator = chiSquaredCalculator, temperature=1e-3, verbose = False)
 # Do MCMC steps
-mcmc.stepMetropolisHastings(numberOfSteps = 5e4)
+mcmc.stepMetropolisHastings(numberOfSteps = 1e4)
 # Save to file if we want to
 mcmc.saveParameters()
 
-# Now do some plotting of the results
-plot(mcmc.parameters["mu"].values, color="blue", label="$\mu$")
+# Now plot each parameter as as a function of mc cycles
+figure()
 hold('on')
+plot(mcmc.parameters["mu"].values, color="blue", label="$\mu$")
 plot(mcmc.parameters["sigma"].values, color="red", label="$\sigma$")
 plot([0, mcmc.acceptedSteps], [mu_real, mu_real], color="blue", label="$\mu$ real", linewidth=2)
-plot([0, mcmc.acceptedSteps], [sigma_real, sigma_real], color="red", label="$\sigma$ real", linewidth=1.5)
+plot([0, mcmc.acceptedSteps], [sigma_real, sigma_real], color="red", label="$\sigma$ real", linewidth=2)
 xlabel('#MC cycles')
 ylabel('Parameter value')
 legend()
+
+# Correlation between the two parameters
+figure()
 mcmc.plotCorrelation(parameter1 = parameters["mu"], parameter2 = parameters["sigma"], bins=50, logarithmic = True)
+# Correlation between the two parameters
+figure()
+mcmc.plotAllParameters()
 show()

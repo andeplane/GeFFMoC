@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import scipy.stats
 from matplotlib.colors import LogNorm
 class Parameter:
 	def __init__(self, name, initialValue, minValue, maxValue, stddev, fixed):
@@ -30,6 +31,30 @@ class Parameter:
 
 	def accept(self):
 		self.values.append(self.value)
+
+	def plotHistogram(self, bins = 100, start = 0):
+		ax = plt.gca()
+		plt.hist(self.values[start:-1], bins=bins, normed=True)
+		mu, sigma = scipy.stats.norm.fit(self.values)
+		xMin = min(self.values)
+		if xMin < 0:
+			xMin *= 1.2
+		else: 
+			xMin *= 0.9
+		xMax = max(self.values)
+		if xMax < 0:
+			xMax *= 0.9
+		else: 
+			xMax *= 1.2
+		x = np.linspace(xMin, xMax, 1e3)
+		y = scipy.stats.norm.pdf(x, loc=mu, scale=sigma)
+		plt.hold('on')
+		plt.plot(x,y)
+		plt.title(self.name)
+		textstr = '$\mu=%.2f$\n$\sigma=%.2f$'%(mu, sigma)
+		props = dict(boxstyle='round', facecolor='white', alpha=0.5)
+		ax.text(0.85, 0.85, textstr, transform=ax.transAxes, fontsize=14,
+	        verticalalignment='top', bbox=props)
 
 	def save(self):
 		fileName = "%s.txt" % self.name
@@ -103,16 +128,38 @@ class MCMC:
 		for parameterKey in self.parameters:
 			self.parameters[parameterKey].save()
 
-	def plotCorrelation(self, parameter1, parameter2, bins = 40, logarithmic = False):
-		fig = plt.figure()
+	def plotCorrelation(self, parameter1, parameter2, bins = 40, logarithmic = False, colorbar = True):
 		if logarithmic:
 			plt.hist2d(parameter1.values, parameter2.values, bins = bins, norm=LogNorm())
 		else: 
 			plt.hist2d(parameter1.values, parameter2.values, bins = bins)
-		plt.colorbar()
-		plt.show()
-		return
-		
+		if colorbar:
+			plt.colorbar()
+	
+	def plotAllParameters(self, bins = 100, start = 0):
+		numFiguresPerDimension = np.ceil(np.sqrt(self.numberOfVaryingParameters()))
+		i = 0
+		for parameterKey in self.parameters:
+			if self.parameters[parameterKey].fixed: continue
+			i += 1
+			plt.subplot(numFiguresPerDimension, numFiguresPerDimension, i)
+			self.parameters[parameterKey].plotHistogram(bins=bins, start = start)
+
+	def numberOfVaryingParameters(self):
+		return sum([int(not self.parameters[key].fixed) for key in self.parameters])
+
+	def plotAllCorrelations(self):
+		numberOfVaryingParameters = self.numberOfVaryingParameters()
+
+		keys = self.parameters.keys()
+		for i in range(len(keys)):
+			for j in range(i+1, len(keys),1):
+				figNumber = numberOfVaryingParameters*numberOfVaryingParameters - (i*len(keys) + j)
+				plt.subplot(numberOfVaryingParameters, numberOfVaryingParameters, figNumber)
+				self.plotCorrelation(self.parameters[keys[i]], self.parameters[keys[j]], colorbar = False)
+				plt.title(self.parameters[keys[i]].name+" and "+self.parameters[keys[j]].name)
+				plt.axis('off')
+				
 	def stepMetropolisHastings(self, numberOfSteps = 1):
 		numberOfSteps = int(numberOfSteps)
 		for i in range(numberOfSteps):
